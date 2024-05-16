@@ -11,7 +11,7 @@ As request came in a began working on a gui that members of the firm could downl
     - Windows: https://github.com/pts/pdfsizeopt#installation-instructions-and-usage-on-windows
     - Linux: https://github.com/pts/pdfsizeopt#installation-instructions-and-usage-on-linux
     - With Docker on Linux and macOS: https://github.com/pts/pdfsizeopt?tab=readme-ov-file#installation-instructions-and-usage-with-docker-on-linux-and-macos
-4. Install Poppler 23.01.0 (version I used, newer may work as well) and add path to bin to System Path variable
+4. Install Poppler 23.01.0 (version I used, newer may work as well) and add path to bin to System Path variable (C:\poppler-23.01.0\Library\bin\)
    - https://github.com/oschwartz10612/poppler-windows/releases
 5. Install dependencies from Requirements.txt
 6. Run main.py from Folder OCR GUI
