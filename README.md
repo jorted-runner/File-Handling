@@ -39,5 +39,6 @@ As request came in a began working on a gui that members of the firm could downl
     - With Docker on Linux and macOS: https://github.com/pts/pdfsizeopt?tab=readme-ov-file#installation-instructions-and-usage-with-docker-on-linux-and-macos
 3. Install Poppler and add to system PATH
    - https://poppler.freedesktop.org/
+   - Version: 23.01 - https://poppler.freedesktop.org/poppler-23.01.0.tar.xz
 5. Install dependencies from Requirements.txt
 6. Run main.py from Folder OCR GUI
