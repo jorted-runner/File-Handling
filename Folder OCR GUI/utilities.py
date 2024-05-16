@@ -1,4 +1,5 @@
 import os
+from PIL import Image
 
 class Utils:
     def create_folders(self, folders):
@@ -18,3 +19,12 @@ class Utils:
         file_name = split_tup[0]
         file_extension = split_tup[1]
         return root_directory, file_w_ext, file_name, file_extension
+    
+    def invert_colors(self, image_path, path):
+        img = Image.open(image_path)
+        root_directory, file_w_ext, file_name, file_extension = self.file_data(image_path)
+        new_file_name = f"{file_name}-inverted.jpg"
+        outpath = os.path.join(path, new_file_name)
+        inverted_img = Image.eval(img, lambda x: 255 - x)
+        inverted_img.save(outpath)
+        os.remove(image_path)

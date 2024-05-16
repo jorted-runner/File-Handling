@@ -9,3 +9,7 @@ msgtopdf>=0.1.6
 reportlab>=3.5.67
 PyPDF2>=2.10.0
 pytesseract>=0.3.10
+pillow_heif>=0.16.0
+ffmpeg-python>=0.2.0
+moviepy>=1.0.3
+pydicom>=2.4.1

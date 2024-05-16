@@ -1,19 +1,13 @@
 import os
 import shutil
-import cv2
-import subprocess
 import tkinter
 from tkinter import ttk
-import pytesseract
-import pdf2image
-from PIL import Image
 from msgtopdf import Msgtopdf
-
-from PyPDF2 import PdfReader, PdfMerger
 
 import fetch_files
 import utilities
 import file_convert
+import OCR
 
 program_file = os.path.dirname(os.path.abspath(__file__))
 not_OCRed_directory = os.path.join(program_file, "Original Not OCRed")
@@ -22,10 +16,11 @@ ocr_data_directory = os.path.join(program_file, "OCR-DATA")
 root = tkinter.Tk()
 root.title("Folder OCR")
 
-options = ["OCR", "Convert Files to PDF", "Convert MSG to PDF"]
+options = ["OCR", "Convert Files to PDF", "Convert MSG to PDF", "Convert HEIC to JPEG", "Convert audio or video to MP4"]
 file_fetcher = fetch_files.FetchFiles()
 utils = utilities.Utils()
 converter = file_convert.converter()
+ocr_engine = OCR.ocr()
 
 def decision_time():
     function_selected = option_select.get()
@@ -36,6 +31,10 @@ def decision_time():
         file_conversion(user_path)
     elif function_selected == options[2]:
         msg_conversion_process(user_path)
+    elif function_selected == options[3]:
+        heic_to_jpeg(user_path)
+    elif function_selected == options[4]:
+        file_to_mp4(user_path)
 
 def file_conversion(user_path):
     all_files = file_fetcher.fetch_all_files_recursive(user_path)
@@ -77,13 +76,50 @@ def msg_conversion_process(user_path):
     else:
         show_messages(errors, "Done")
     reset_entries()
-          
+
+def heic_to_jpeg(user_path):
+    all_files = file_fetcher.fetch_all_files_recursive(user_path)
+    errors = []
+    for file in all_files:
+        root_directory, file_w_ext, file_name, file_extension = utils.file_data(file)
+        if file_extension == ".heic":
+            try:
+                heic_file = file
+                jpg_file = os.path.join(root_directory, f"{file_name}.jpeg")
+                converter.convert_heic_to_jpg(heic_file, jpg_file)
+            except Exception as e:
+                error = f"{file} | {e}"
+                errors.append(error)
+    if errors:
+        show_messages(errors, "Errors")
+    else:
+        show_messages(errors, "Done")
+    reset_entries()
+
+def file_to_mp4(user_path):
+    all_files = file_fetcher.fetch_all_files_recursive(user_path)
+    errors = []
+    for file in all_files:
+        root_directory, file_w_ext, file_name, file_extension = utils.file_data(file)
+        if file_extension.lower() == ".mov":
+            converter.mov_to_mp4(root_directory, file_name, file_extension)
+        elif file_extension.lower() == ".aac":
+            converter.convert_audio(file, os.path.join(root_directory, file_name + ".mp4"), 'mp4')
+        elif file_extension.lower() == ".m4a":
+            converter.m4a_to_mp4(root_directory, file_name, file_extension)
+    if errors:
+        show_messages(errors, "Errors")
+    else:
+        show_messages(errors, "Done")
+    reset_entries()
+    
+
 def trigger_OCR(user_path):
     messagebox = tkinter.Toplevel(root)
     messagebox.title("Working")
     messagebox.geometry("500x100")
     
-    message_label = tkinter.Label(messagebox, text="Working on those files, this window will close when the process is finished.\nThere will be several pop ups, just ignore them.")
+    message_label = tkinter.Label(messagebox, text="Working on those files, this window will close when the process is finished.")
     message_label.pack(pady=20)
     messagebox.protocol("WM_DELETE_WINDOW", lambda: None)
     utils.create_folders([ocr_data_directory, not_OCRed_directory])
@@ -98,7 +134,7 @@ def trigger_OCR(user_path):
             except Exception as e:
                 print(e)
             copied_file = os.path.join(not_OCRed_directory, file_w_ext)
-            needs_OCRed = check_OCR(copied_file)
+            needs_OCRed = ocr_engine.check_OCR(copied_file)
             try:
                 if needs_OCRed:
                     OCR_process(file, root_directory, file_w_ext, file_name)
@@ -189,100 +225,16 @@ def show_messages(messages, message_type):
 def close_error(box):
     box.destroy()
 
-def check_OCR(file_path):
-    try:
-        with open(file_path, "rb") as pdf_file:
-            pdf_reader = PdfReader(pdf_file)
-            for page_num, page in enumerate(pdf_reader.pages, start=1):
-                if page.extract_text().strip():
-                    return False
-        return True
-    except PermissionError:
-        print("Permission Error, unable to open the file")
-
-def image_conversion(inpath, folder_save_point, file_name):
-        print("Converting to JPG")
-        OUTPUT_FOLDER = folder_save_point
-        FIRST_PAGE = None
-        LAST_PAGE = None
-        FORMAT = 'jpg'
-        USERPWD = None
-        USE_CROPBOX = False
-        STRICT = False
-        page = 0
-
-        pdf2image.convert_from_path(inpath,
-                                    output_folder = OUTPUT_FOLDER,
-                                    first_page = FIRST_PAGE,
-                                    last_page = LAST_PAGE,
-                                    fmt = FORMAT,
-                                    userpw = USERPWD,
-                                    use_cropbox = USE_CROPBOX,
-                                    strict = STRICT,
-                                    dpi=300, output_file = f"{file_name}",
-                                    )
-        print("All pages converted to JPG.")
-
-def OCR(pages, pic, ocr_data_folder):
-        pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-        input_dir = os.path.join(ocr_data_folder, pic)
-        img = cv2.imread(input_dir, 1)
-        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        result = pytesseract.image_to_pdf_or_hocr(img_rgb, lang = "eng",
-                                                  config = "--dpi 300")
-        input_dir = input_dir.replace('.jpg', '.pdf')
-        f = open(input_dir, "w+b")
-        f.write(bytearray(result))
-        f.close()
-        print("Page " , pages, " OCRed.") 
-
-def invert_colors(image_path, path):
-    img = Image.open(image_path)
-    root_directory, file_w_ext, file_name, file_extension = utils.file_data(image_path)
-    new_file_name = f"{file_name}-inverted.jpg"
-    outpath = os.path.join(path, new_file_name)
-    inverted_img = Image.eval(img, lambda x: 255 - x)
-    inverted_img.save(outpath)
-    os.remove(image_path)
-
-def compress_pdf(pdf_path):
-    try:
-        subprocess.run(['C:\pdfsizeopt\pdfsizeopt', '--use-pngout=no', pdf_path, pdf_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    except subprocess.CalledProcessError as e:
-        print(f"An error occurred during compression: {e}")
-
-def merge_pdf(extracted_files: list [str], file_name, base_directory):
-        #Merge OCRed PDFs
-        output_PDF = file_name + ".pdf"
-        merger = PdfMerger()
-        pdfs = 0
-        for pdf in extracted_files:
-            if pdf.endswith('.pdf'):
-                merger.append(pdf)
-                pdfs += 1
-        merger.write(output_PDF)
-        merger.close()
-        print("Merge Complete.\nBeginning Compression.")
-        compress_pdf(output_PDF)
-        print(f"{file_name} compressed successfully")
-        shutil.copy2(output_PDF, base_directory)
-        print("OCRed moved to correct location\n")
-        os.remove(output_PDF)
-
 def OCR_process(file_path, directory, file_name_ext, file_name):
     ocr_data_folder = os.path.join(ocr_data_directory, file_name)
     utils.create_folders([ocr_data_folder])
-    image_conversion(file_path, ocr_data_folder, file_name)
-    # Uncomment this section to reverse the color of the file
-    # preInvert = fetch_all_files(ocr_data_folder)
-    # for pic in preInvert:
-    #     invert_colors(pic, ocr_data_folder)
+    converter.image_conversion(file_path, ocr_data_folder, file_name)
     jpgs = [f for f in os.listdir(ocr_data_folder) if os.path.isfile(os.path.join(ocr_data_folder, f))]
     for page, pic in enumerate(jpgs):
         page += 1
-        OCR(page, pic, ocr_data_folder)
+        ocr_engine.OCR(page, pic, ocr_data_folder)
     extracted_files = file_fetcher.fetch_all_files(ocr_data_folder)
-    merge_pdf(extracted_files, file_name, directory)
+    ocr_engine.merge_pdf(extracted_files, file_name, directory)
 
 def display_help():
     os.startfile('HowToUse.pdf')
