@@ -5,7 +5,7 @@ As request came in a began working on a gui that members of the firm could downl
 ## Getting Started
 1. Install Pytesseract
    - Get latest release: https://github.com/UB-Mannheim/tesseract/wiki
-   - Download and run https://digi.bib.uni-mannheim.de/tesseract/tesseract-ocr-w64-setup-5.3.3.20231005.exe
+      - Download and run https://digi.bib.uni-mannheim.de/tesseract/tesseract-ocr-w64-setup-5.3.3.20231005.exe (Found using link above)
    - More info: https://pypi.org/project/pytesseract/
 3. Follow instructions for pdfsizeopt:
     - Windows: https://github.com/pts/pdfsizeopt#installation-instructions-and-usage-on-windows
