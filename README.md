@@ -21,12 +21,18 @@ As request came in a began working on a gui that members of the firm could downl
         
         pip install pytesseract
         Or if you have git installed:
+     ```
         pip install -U git+https://github.com/madmaze/pytesseract.git
+     ```
         Installing from source:
+     ```
         git clone https://github.com/madmaze/pytesseract.git
         cd pytesseract && pip install -U .
+     ```
         Install with conda (via conda-forge):
+     ```
         conda install -c conda-forge pytesseract
+     ```
 2. Follow instructions for pdfsizeopt:
     - Windows: https://github.com/pts/pdfsizeopt#installation-instructions-and-usage-on-windows
     - Linux: https://github.com/pts/pdfsizeopt#installation-instructions-and-usage-on-linux
