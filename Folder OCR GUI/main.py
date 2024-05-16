@@ -6,14 +6,15 @@ import tkinter
 from tkinter import ttk
 import pytesseract
 import pdf2image
-import comtypes.client
-from docx2pdf import convert
-from fpdf import FPDF
 from PIL import Image
 from msgtopdf import Msgtopdf
-from reportlab.pdfgen import canvas
+
 from PyPDF2 import PdfReader, PdfMerger
 import datetime
+
+import fetch_files
+import utilities
+import file_convert
 
 program_file = os.path.dirname(os.path.abspath(__file__))
 not_OCRed_directory = os.path.join(program_file, "Original Not OCRed")
@@ -23,6 +24,9 @@ root = tkinter.Tk()
 root.title("Folder OCR")
 
 options = ["OCR", "Convert Files to PDF", "Convert MSG to PDF"]
+file_fetcher = fetch_files.FetchFiles()
+utils = utilities.Utils()
+converter = file_convert.converter()
 
 def decision_time():
     function_selected = option_select.get()
@@ -33,20 +37,9 @@ def decision_time():
         file_conversion(user_path)
     elif function_selected == options[2]:
         msg_converstion_process(user_path)
-    
-def create_folder(folder_name):
-    if not os.path.exists(folder_name):
-        try:
-            os.makedirs(folder_name)
-        except Exception as e:
-            print("Error creating folder:", e)
-
-def create_data_folders():
-    create_folder(not_OCRed_directory)
-    create_folder(ocr_data_directory)
 
 def file_conversion(user_path):
-    all_files = fetch_all_files_recursive(user_path)
+    all_files = file_fetcher.fetch_all_files_recursive(user_path)
     errors = []
     for file in all_files:
         directory = os.path.dirname(file)
@@ -56,13 +49,13 @@ def file_conversion(user_path):
         file_extension = (split_tup[1]).lower()
         try:
             if file_extension == ".txt":
-                txt_to_pdf(directory, file_name, file_extension)
+                converter.txt_to_pdf(directory, file_name, file_extension)
             elif file_extension in ['.png', '.jpg', '.jpeg', '.bmp']:
-                image_to_pdf(directory, file_name, file_extension)
+                converter.image_to_pdf(directory, file_name, file_extension)
             elif file_extension == ".docx":
-                docx_to_pdf(directory, file_name, file_extension)
+                converter.docx_to_pdf(directory, file_name, file_extension)
             elif file_extension == ".doc":
-                doc_to_pdf(directory, file_name, file_extension)
+                converter.doc_to_pdf(directory, file_name, file_extension)
         except:
             error = f"{file} | Could not be converted to PDF"
             errors.append(error)
@@ -72,41 +65,8 @@ def file_conversion(user_path):
         show_messages(errors, "Done")
     reset_entries()
 
-def txt_to_pdf(path, file_name, file_extension):
-    og_path = os.path.join(path, f"{file_name}{file_extension}")
-    converted = os.path.join(path, f"{file_name}.pdf")
-    pdf = FPDF()  
-    pdf.add_page()
-    pdf.set_font("Arial", size = 15)
-    f = open(og_path, "r")
-    for x in f:
-        pdf.cell(200, 10, txt = x, ln = 1, align = 'L')
-    pdf.output(converted)
-
-def docx_to_pdf(path, file_name, file_extension):
-    og_path = os.path.join(path, f"{file_name}{file_extension}")
-    converted = os.path.join(path, f"{file_name}.pdf")
-    convert(og_path, converted)
-
-def image_to_pdf(folder, file_name, file_extension):
-    og_path = os.path.join(folder, file_name + file_extension)
-    converted = os.path.join(folder, file_name + ".pdf")
-    image = Image.open(og_path)
-    c = canvas.Canvas(converted, pagesize=image.size)
-    c.drawImage(og_path, 0, 0, image.size[0], image.size[1])
-    c.save()
-
-def doc_to_pdf(path, file_name, file_extension):
-    og_path = os.path.join(path, file_name + file_extension)
-    converted = os.path.join(path, file_name + ".pdf")
-    word = comtypes.client.CreateObject("Word.Application")
-    doc = word.Documents.Open(og_path)
-    doc.SaveAs(converted, FileFormat=17)
-    doc.Close()
-    word.Quit()
-
 def msg_converstion_process(user_path):
-    all_files = fetch_all_files_recursive(user_path)
+    all_files = file_fetcher.fetch_all_files_recursive(user_path)
     errors = []
     for file in all_files:
         directory = os.path.dirname(file)
@@ -136,8 +96,8 @@ def trigger_OCR(user_path):
     message_label = tkinter.Label(messagebox, text="Working on those files, this window will close when the process is finished.\nThere will be several pop ups, just ignore them.")
     message_label.pack(pady=20)
     messagebox.protocol("WM_DELETE_WINDOW", lambda: None)
-    create_data_folders()
-    all_files = fetch_all_files(user_path)
+    utils.create_folders([ocr_data_directory, not_OCRed_directory])
+    all_files = file_fetcher.fetch_all_files(user_path)
     ocred_pdfs = []
     error_pdfs = []
     for i, file in enumerate(all_files, start=1):
@@ -245,30 +205,6 @@ def show_messages(messages, message_type):
 def close_error(box):
     box.destroy()
 
-def fetch_all_files_recursive(folder_save_point):
-    target_files = []
-    for entry_name in os.listdir(folder_save_point):
-        full_path = os.path.join(folder_save_point, entry_name)
-        if os.path.isfile(full_path):
-            target_files.append(full_path)
-        elif os.path.isdir(full_path):
-            target_files.extend(fetch_all_files_recursive(full_path))
-    return target_files
-
-def fetch_all_files(folder_save_point):
-    target_files = []
-    for file_name in os.listdir(folder_save_point):
-        if os.path.isfile(os.path.join(folder_save_point, file_name)):
-            target_files.append(os.path.join(folder_save_point, file_name))
-    return target_files
-
-def fetch_all_files(folder_save_point):
-    target_files = []
-    for path, subdirs, files in os.walk(folder_save_point):
-        for name in files:
-            target_files.append(os.path.join(path, name))
-    return target_files
-
 def check_OCR(file_path):
     try:
         with open(file_path, "rb") as pdf_file:
@@ -284,10 +220,6 @@ def logError(error_type, actual_file, file_path):
     f = open(r"C:\Users\dee.HFMLEGAL\Desktop\Error_log.txt", "a")
     f.write("{0} -- {1}: {2} -- {3}\n".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M"), actual_file, error_type, file_path))
     f.close()
-
-def create_folder(folder_name):
-    if not os.path.exists(folder_name):
-        os.makedirs(folder_name)
 
 def image_conversion(inpath, folder_save_point, file_name):
         print("Converting to JPG")
@@ -363,7 +295,7 @@ def merge_pdf(extracted_files: list [str], file_name, base_directory):
 
 def OCR_proccess(file_path, directory, file_name_ext, file_name):
     ocr_data_folder = os.path.join(r"C:\OCRdata", file_name)
-    create_folder(ocr_data_folder)
+    utils.create_folders([ocr_data_folder])
     image_conversion(file_path, ocr_data_folder, file_name)
     # Uncomment this section to reverse the color of the file
     # preInvert = fetch_all_files(ocr_data_folder)
@@ -373,7 +305,7 @@ def OCR_proccess(file_path, directory, file_name_ext, file_name):
     for page, pic in enumerate(jpgs):
         page += 1
         OCR(page, pic, ocr_data_folder)
-    extracted_files = fetch_all_files(ocr_data_folder)
+    extracted_files = file_fetcher.fetch_all_files(ocr_data_folder)
     merge_pdf(extracted_files, file_name, directory)
 
 def display_help():
@@ -401,7 +333,7 @@ example_label = tkinter.Label(master=frame, text="Enter the Folder path below:",
 example_label.grid(column=0, columnspan=2, row=1)
 
 path_entry = tkinter.Entry(master=frame, width=50, fg="gray")
-path_entry.insert(string=r"C:\Users\dee\hfmlegal\hfmlegal\General", index=0)
+path_entry.insert(string=r"C:\Users\dee\General", index=0)
 path_entry.grid(column=0, columnspan=2, row=2, sticky="w", pady=(10, 5))
 
 option_select = ttk.Combobox(frame, values=options)

@@ -1,0 +1,10 @@
+opencv-python>=4.5.3.56
+pytesseract>=0.3.7
+pdf2image>=1.16.0
+comtypes>=1.1.10
+docx2pdf>=0.1.8
+fpdf>=1.7.2
+Pillow>=8.3.1
+msgtopdf>=0.1.6
+reportlab>=3.5.67
+PyPDF2>=2.10.0
