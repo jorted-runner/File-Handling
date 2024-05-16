@@ -6,7 +6,7 @@ from reportlab.pdfgen import canvas
 import comtypes.client
 
 class converter:
-    def txt_to_pdf(path, file_name, file_extension):
+    def txt_to_pdf(self, path, file_name, file_extension):
         og_path = os.path.join(path, f"{file_name}{file_extension}")
         converted = os.path.join(path, f"{file_name}.pdf")
         pdf = FPDF()  
@@ -17,20 +17,19 @@ class converter:
             pdf.cell(200, 10, txt = x, ln = 1, align = 'L')
         pdf.output(converted)
 
-    def docx_to_pdf(path, file_name, file_extension):
+    def docx_to_pdf(self, path, file_name, file_extension):
         og_path = os.path.join(path, f"{file_name}{file_extension}")
         converted = os.path.join(path, f"{file_name}.pdf")
         convert(og_path, converted)
 
-    def image_to_pdf(folder, file_name, file_extension):
+    def image_to_pdf(self, folder, file_name, file_extension):
         og_path = os.path.join(folder, file_name + file_extension)
         converted = os.path.join(folder, file_name + ".pdf")
         image = Image.open(og_path)
-        c = canvas.Canvas(converted, pagesize=image.size)
-        c.drawImage(og_path, 0, 0, image.size[0], image.size[1])
-        c.save()
+        image.save(converted, "PDF", resolution=100.0)
+        image.close()
 
-    def doc_to_pdf(path, file_name, file_extension):
+    def doc_to_pdf(self, path, file_name, file_extension):
         og_path = os.path.join(path, file_name + file_extension)
         converted = os.path.join(path, file_name + ".pdf")
         word = comtypes.client.CreateObject("Word.Application")

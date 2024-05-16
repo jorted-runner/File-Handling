@@ -51,8 +51,8 @@ def file_conversion(user_path):
                 converter.docx_to_pdf(directory, file_name, file_extension)
             elif file_extension == ".doc":
                 converter.doc_to_pdf(directory, file_name, file_extension)
-        except:
-            error = f"{file} | Could not be converted to PDF"
+        except Exception as e:
+            error = f"{file} | {e}"
             errors.append(error)
     if errors:
         show_messages(errors, "Errors")
