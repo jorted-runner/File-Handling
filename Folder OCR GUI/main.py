@@ -27,9 +27,6 @@ file_fetcher = fetch_files.FetchFiles()
 utils = utilities.Utils()
 converter = file_convert.converter()
 
-# This will need to be changed to account for your poppler installation
-POPPLER = r'C:\poppler-23.01.0\Library\bin'
-
 def decision_time():
     function_selected = option_select.get()
     user_path = path_entry.get()
@@ -223,7 +220,7 @@ def image_conversion(inpath, folder_save_point, file_name):
                                     use_cropbox = USE_CROPBOX,
                                     strict = STRICT,
                                     dpi=300, output_file = f"{file_name}",
-                                    poppler_path=POPPLER)
+                                    )
         print("All pages converted to JPG.")
 
 def OCR(pages, pic, ocr_data_folder):
