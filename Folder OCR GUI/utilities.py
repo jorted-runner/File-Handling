@@ -6,12 +6,12 @@ class Utils:
             if not self.check_folder(folder):
                 os.makedirs(folder)
 
-    def check_folder(folder):
+    def check_folder(self, folder):
         if os.path.exists(folder):
             return True
         return False
     
-    def file_data(file):
+    def file_data(self, file):
         root_directory = os.path.dirname(file)
         file_w_ext = os.path.basename(file).split('/')[-1]
         split_tup = os.path.splitext(file_w_ext)

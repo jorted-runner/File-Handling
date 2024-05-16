@@ -270,7 +270,7 @@ def merge_pdf(extracted_files: list [str], file_name, base_directory):
         os.remove(output_PDF)
 
 def OCR_process(file_path, directory, file_name_ext, file_name):
-    ocr_data_folder = os.path.join(r"C:\OCRdata", file_name)
+    ocr_data_folder = os.path.join(ocr_data_directory, file_name)
     utils.create_folders([ocr_data_folder])
     image_conversion(file_path, ocr_data_folder, file_name)
     # Uncomment this section to reverse the color of the file
