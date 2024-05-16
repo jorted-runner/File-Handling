@@ -10,7 +10,6 @@ from PIL import Image
 from msgtopdf import Msgtopdf
 
 from PyPDF2 import PdfReader, PdfMerger
-import datetime
 
 import fetch_files
 import utilities
@@ -36,17 +35,13 @@ def decision_time():
     elif function_selected == options[1]:
         file_conversion(user_path)
     elif function_selected == options[2]:
-        msg_converstion_process(user_path)
+        msg_conversion_process(user_path)
 
 def file_conversion(user_path):
     all_files = file_fetcher.fetch_all_files_recursive(user_path)
     errors = []
     for file in all_files:
-        directory = os.path.dirname(file)
-        file_w_ext = os.path.basename(file).split('/')[-1]
-        split_tup = os.path.splitext(file_w_ext)
-        file_name = split_tup[0]
-        file_extension = (split_tup[1]).lower()
+        directory, file_w_ext, file_name, file_extension = utils.file_data(file)
         try:
             if file_extension == ".txt":
                 converter.txt_to_pdf(directory, file_name, file_extension)
@@ -65,16 +60,11 @@ def file_conversion(user_path):
         show_messages(errors, "Done")
     reset_entries()
 
-def msg_converstion_process(user_path):
+def msg_conversion_process(user_path):
     all_files = file_fetcher.fetch_all_files_recursive(user_path)
     errors = []
     for file in all_files:
-        directory = os.path.dirname(file)
-        file_w_ext = os.path.basename(file).split('/')[-1]
-        split_tup = os.path.splitext(file_w_ext)
-        file_name = split_tup[0]
-        file_extension = (split_tup[1]).lower()
-        output = os.path.join(directory, file_name, ".pdf")
+        root_directory, file_w_ext, file_name, file_extension = utils.file_data(file)
         if file_extension == ".msg":
             try:
                 email = Msgtopdf(file)
@@ -101,11 +91,7 @@ def trigger_OCR(user_path):
     ocred_pdfs = []
     error_pdfs = []
     for i, file in enumerate(all_files, start=1):
-        root_directory = os.path.dirname(file)
-        file_w_ext = os.path.basename(file).split('/')[-1]
-        split_tup = os.path.splitext(file_w_ext)
-        file_name = split_tup[0]
-        file_extension = split_tup[1]
+        root_directory, file_w_ext, file_name, file_extension = utils.file_data(file)
         if file_extension.lower() == ".pdf":
             try:
                 shutil.copy2(file, not_OCRed_directory)
@@ -115,7 +101,7 @@ def trigger_OCR(user_path):
             needs_OCRed = check_OCR(copied_file)
             try:
                 if needs_OCRed:
-                    OCR_proccess(file, root_directory, file_w_ext, file_name)
+                    OCR_process(file, root_directory, file_w_ext, file_name)
                     ocred_pdfs.append(file)
                 else:
                     pass
@@ -152,8 +138,6 @@ def show_messages(messages, message_type):
 
     frame = tkinter.Frame(canvas)
     canvas.create_window((0, 0), window=frame, anchor="nw")
-
-    
     total_height = 0
 
     if messages:
@@ -216,11 +200,6 @@ def check_OCR(file_path):
     except PermissionError:
         print("Permission Error, unable to open the file")
 
-def logError(error_type, actual_file, file_path):
-    f = open(r"C:\Users\dee.HFMLEGAL\Desktop\Error_log.txt", "a")
-    f.write("{0} -- {1}: {2} -- {3}\n".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M"), actual_file, error_type, file_path))
-    f.close()
-
 def image_conversion(inpath, folder_save_point, file_name):
         print("Converting to JPG")
         OUTPUT_FOLDER = folder_save_point
@@ -259,12 +238,9 @@ def OCR(pages, pic, ocr_data_folder):
 
 def invert_colors(image_path, path):
     img = Image.open(image_path)
-    file_w_ext = os.path.basename(image_path).split('/')[-1]
-    split_tup = os.path.splitext(file_w_ext)
-    file_name = split_tup[0]
+    root_directory, file_w_ext, file_name, file_extension = utils.file_data(image_path)
     new_file_name = f"{file_name}-inverted.jpg"
     outpath = os.path.join(path, new_file_name)
-    print(outpath)
     inverted_img = Image.eval(img, lambda x: 255 - x)
     inverted_img.save(outpath)
     os.remove(image_path)
@@ -293,7 +269,7 @@ def merge_pdf(extracted_files: list [str], file_name, base_directory):
         print("OCRed moved to correct location\n")
         os.remove(output_PDF)
 
-def OCR_proccess(file_path, directory, file_name_ext, file_name):
+def OCR_process(file_path, directory, file_name_ext, file_name):
     ocr_data_folder = os.path.join(r"C:\OCRdata", file_name)
     utils.create_folders([ocr_data_folder])
     image_conversion(file_path, ocr_data_folder, file_name)
