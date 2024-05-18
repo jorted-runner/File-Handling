@@ -18,7 +18,7 @@ class Utils:
         split_tup = os.path.splitext(file_w_ext)
         file_name = split_tup[0]
         file_extension = split_tup[1]
-        return root_directory, file_w_ext, file_name, file_extension
+        return root_directory, file_w_ext, file_name, file_extension.lower()
     
     def invert_colors(self, image_path, path):
         img = Image.open(image_path)
