@@ -17,3 +17,6 @@ As requests increased, I began working on a GUI that members of the firm could d
    - https://wkhtmltopdf.org/downloads.html
 5. Install dependencies from Requirements.txt
 6. Run main.py from Folder OCR GUI
+
+## See How it Works
+![DEMO](https://github.com/jorted-runner/File-Handling/blob/main/Images/DEMO.gif)
