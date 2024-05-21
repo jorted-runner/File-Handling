@@ -142,3 +142,12 @@ class converter:
                                     strict = STRICT,
                                     dpi=300, output_file = f"{file_name}",
                                     )
+        
+    def gif_to_mp4(self, folder, file_name, file_extension):
+        input_path = os.path.join(folder, file_name + file_extension)
+        output_path = os.path.join(folder, file_name + ".mp4")
+        
+        try:
+            ffmpeg.input(input_path).output(output_path, codec='libx264').run()
+        except ffmpeg.Error as e:
+            print(f"Error occurred while converting .gif to .mp4: {e}")
