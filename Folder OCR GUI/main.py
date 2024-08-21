@@ -107,8 +107,10 @@ def file_to_mp4(user_path):
             converter.convert_audio(file, os.path.join(root_directory, file_name + ".mp4"), 'mp4')
         elif file_extension.lower() == ".m4a":
             converter.m4a_to_mp4(root_directory, file_name, file_extension)
-        elif file_extension == '.gif':
+        elif file_extension.lower() == '.gif':
                 converter.gif_to_mp4(root_directory, file_name, file_extension)
+        elif file_extension.lower() == '.mpg':
+                converter.mpg_to_mp4(root_directory, file_name, file_extension)
     if errors:
         show_messages(errors, "Errors")
     else:
