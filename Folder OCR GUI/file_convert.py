@@ -148,6 +148,6 @@ class converter:
         output_path = os.path.join(folder, file_name + ".mp4")
         
         try:
-            ffmpeg.input(input_path).output(output_path, codec='libx264').run()
+            ffmpeg.input(input_path).output(output_path, vcodec='libx264', pix_fmt='yuv420p', acodec='aac').run()
         except ffmpeg.Error as e:
             print(f"Error occurred while converting .gif to .mp4: {e}")
