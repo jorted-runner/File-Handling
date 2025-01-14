@@ -16,6 +16,7 @@ As requests increased, I began working on a GUI that members of the firm could d
 5. Install latest version of wkhtmltopdf and add to PATH:
    - https://wkhtmltopdf.org/downloads.html
 5. Install dependencies from Requirements.txt
+   1. pip install -r requirements.txt
 6. Run main.py from Folder OCR GUI
 
 ## See How it Works
